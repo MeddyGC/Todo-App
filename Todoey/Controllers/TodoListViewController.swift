@@ -7,7 +7,7 @@
 
 import UIKit
 import CoreData
-class TodoListViewController: UITableViewController {
+class TodoListViewController: UITableViewController{
     
     var itemArray = [Item]()
     let defaults = UserDefaults.standard
@@ -52,6 +52,9 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
 
 
         
@@ -103,9 +106,8 @@ class TodoListViewController: UITableViewController {
         
     }
     
-    func loadItems() {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
         
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
         do{
             itemArray = try context.fetch(request)
         }
@@ -115,5 +117,34 @@ class TodoListViewController: UITableViewController {
 
     }
     
+    
+    
+    
+    
 }
 
+//MARK: - SearchBar Methods
+
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+       
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
+        
+        request.sortDescriptors = [sortDescriptor]
+        
+        loadItems(with: request)
+        
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+        }
+    }
+    
+}
+ 
